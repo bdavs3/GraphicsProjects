@@ -4,7 +4,7 @@
  Name: Davis, Ben
  
  Collaborators: N/A
- Project Summary: TODO
+ Project Summary: This program creates a cube in 3D space and rotates it about the X, Y, and Z axes.  In order to do this, the points making up the planes of the cube are first converted to homogenous.  They are then multiplied by (already homogenous) rotation matrices for each axis.  Finally, the rotated points are converted back to Cartesian coordinates so that they may be drawn in space.  I decided to almost exclusively use 2-dimensional vectors in all functions (to represent matrices) so that they could be accessed in the following way: matrix[row][column].
  ***/
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -27,19 +27,28 @@
 using namespace std;
 
 
-float theta = 0.0;
+GLfloat theta = 0.0;
 
 // Converts degrees to radians for rotation
-float deg2rad(float d) {
+GLfloat deg2rad(GLfloat d) {
     return (d*M_PI) / 180.0;
 }
 
-// Converts a vector to an array
-GLfloat* vector2array(vector<GLfloat> vec) {
-    GLfloat* arr = new GLfloat[vec.size()];
-    for (int i = 0; i < vec.size(); i++) {
-        arr[i] = vec[i];
+// Converts a 2D vector to an array.  I made some large modifications to this function because of the fact that I decided to work exclusively with 2D vectors in this program.
+GLfloat* two_d_vector_to_array(vector<vector<GLfloat>> vec) {
+    vector<GLfloat> one_d_vector(vec.size() * vec[0].size());
+    
+    for (int i = 0; i < vec[0].size(); i++) {
+        for (int j = 0; j < vec.size(); j++) {
+            one_d_vector[(3*i)+j] = vec[j][i];
+        }
     }
+    
+    GLfloat* arr = new GLfloat[one_d_vector.size()];
+    for (int i = 0; i < one_d_vector.size(); i++) {
+        arr[i] = one_d_vector[i];
+    }
+    
     return arr;
 }
 
@@ -47,39 +56,28 @@ GLfloat* vector2array(vector<GLfloat> vec) {
 vector<vector<GLfloat>> to_homogenous_coord(vector<vector<GLfloat>> cartesian_coords) {
     vector<vector<GLfloat>> result(cartesian_coords.size(), vector<GLfloat>(cartesian_coords[0].size(), 0.0));
     
-    for (int i = 0; i < cartesian_coords[0].size(); i++){
-        for (int j = 0; j < cartesian_coords.size(); j++) {
+    for (int i = 0; i < cartesian_coords.size(); i++){
+        for (int j = 0; j < cartesian_coords[0].size(); j++) {
             result[i][j] = cartesian_coords[i][j];
         }
     }
     
-    for (vector<GLfloat>& v : result) {
-        v.resize(v.size() + 1, 0.0);
-    }
-    
-    vector<GLfloat> appended_vector(cartesian_coords[0].size() + 1, 0.0);
+    vector<GLfloat> appended_vector(cartesian_coords[0].size(), 0.0);
+    appended_vector[appended_vector.size() - 1] = 1.0;
     
     result.resize(result.size() + 1, appended_vector);
-    
-    result[result[0].size() - 1][result.size() - 1] = 1.0;
     
     return result;
 }
 
-// Converts Cartesian coordinates to homogeneous coordinates
+// Converts homogenous coordinates to Cartesian coordinates
 vector<vector<GLfloat>> to_cartesian_coord(vector<vector<GLfloat>> homogenous_coords) {
     vector<vector<GLfloat>> result(homogenous_coords.size(), vector<GLfloat>(homogenous_coords[0].size(), 0.0));
     
-    
-    
-    for (int i = 0; i < homogenous_coords[0].size(); i++){
-        for (int j = 0; j < homogenous_coords.size(); j++) {
+    for (int i = 0; i < homogenous_coords.size(); i++){
+        for (int j = 0; j < homogenous_coords[0].size(); j++) {
             result[i][j] = homogenous_coords[i][j];
         }
-    }
-    
-    for (vector<GLfloat>& v : result) {
-        v.resize(v.size() - 1);
     }
     
     result.resize(result.size() - 1);
@@ -90,11 +88,14 @@ vector<vector<GLfloat>> to_cartesian_coord(vector<vector<GLfloat>> homogenous_co
 // Definition of a rotation matrix about the x-axis theta degrees
 vector<vector<GLfloat>> rotation_matrix_x (float theta) {
     vector<vector<GLfloat>> rotate_mat_x;
+    
+    theta = deg2rad(theta);
 
     rotate_mat_x = {
-        {1.0, 0.0, 0.0},
-        {0.0, cos(theta), -sin(theta)},
-        {0.0, sin(theta), cos(theta)},
+        {1.0, 0.0, 0.0, 0.0},
+        {0.0, cos(theta), -sin(theta), 0.0},
+        {0.0, sin(theta), cos(theta), 0.0},
+        {0.0, 0.0, 0.0, 1.0},
     };
     
     return rotate_mat_x;
@@ -105,10 +106,13 @@ vector<vector<GLfloat>> rotation_matrix_x (float theta) {
 vector<vector<GLfloat>> rotation_matrix_y (float theta) {
     vector<vector<GLfloat>> rotate_mat_y;
     
+    theta = deg2rad(theta) / 2.5; // rotates a bit slower than X rotation
+    
     rotate_mat_y = {
-        {cos(theta), 0.0, -sin(theta)},
-        {0.0, 1.0, 0.0},
-        {sin(theta), 0.0, cos(theta)},
+        {cos(theta), 0.0, -sin(theta), 0.0},
+        {0.0, 1.0, 0.0, 0.0},
+        {sin(theta), 0.0, cos(theta), 0.0},
+        {0.0, 0.0, 0.0, 1.0},
     };
     
     return rotate_mat_y;
@@ -119,10 +123,13 @@ vector<vector<GLfloat>> rotation_matrix_y (float theta) {
 vector<vector<GLfloat>> rotation_matrix_z (float theta) {
     vector<vector<GLfloat>> rotate_mat_z;
     
+    theta = deg2rad(theta) / 5.0; // rotates a bit slower than X and Y rotations
+    
     rotate_mat_z = {
-        {0.0, 0.0, 1.0},
-        {cos(theta), -sin(theta), 0.0},
-        {sin(theta), cos(theta), 0.0},
+        {cos(theta), -sin(theta), 0.0, 0.0},
+        {sin(theta), cos(theta), 0.0, 0.0},
+        {0.0, 0.0, 1.0, 0.0},
+        {0.0, 0.0, 0.0, 1.0},
     };
     
     return rotate_mat_z;
@@ -133,13 +140,13 @@ vector<vector<GLfloat>> mat_mult(vector<vector<GLfloat>> A, vector<vector<GLfloa
     vector<vector<GLfloat>> result(A.size(), vector<GLfloat>(B[0].size(), 0.0));
     
     if (A[0].size() != B.size()) {
-        cout << "Invalid matrix multiplication... Matrix sizes " << A.size() << "x" << A[0].size() << " and " << B[0].size() << "x" << B.size() << " are incompatible";
+        cout << "Invalid matrix multiplication... Matrix sizes " << A.size() << "x" << A[0].size() << " and " << B.size() << "x" << B[0].size() << " are incompatible" << '\n';
     }
     
-    for (int i = 0; i < (int) A[0].size(); i++) {
-        for (int j = 0; j < (int) B[0].size(); j++) {
-            for (int k = 0; k < (int) B.size(); k++) {
-                result[i][j] += A[i][k] * B[k][i];
+    for (int i = 0; i < B[0].size(); i++) {
+        for (int j = 0; j < A.size(); j++) {
+            for (int k = 0; k < A[0].size(); k++) {
+                result[j][i] += A[j][k] * B[k][i];
             }
         }
     }
@@ -179,39 +186,16 @@ void display_func() {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     
-    vector<GLfloat> points = {
-        // Front plane
-        +1.0,   +1.0,   +1.0,
-        -1.0,   +1.0,   +1.0,
-        -1.0,   -1.0,   +1.0,
-        +1.0,   -1.0,   +1.0,
-        // Back plane
-        +1.0,   +1.0,   -1.0,
-        -1.0,   +1.0,   -1.0,
-        -1.0,   -1.0,   -1.0,
-        +1.0,   -1.0,   -1.0,
-        // Right
-        +1.0,   +1.0,   -1.0,
-        +1.0,   +1.0,   +1.0,
-        +1.0,   -1.0,   +1.0,
-        +1.0,   -1.0,   -1.0,
-        // Left
-        -1.0,   +1.0,   -1.0,
-        -1.0,   +1.0,   +1.0,
-        -1.0,   -1.0,   +1.0,
-        -1.0,   -1.0,   -1.0,
-        // Top
-        +1.0,   +1.0,   +1.0,
-        -1.0,   +1.0,   +1.0,
-        -1.0,   +1.0,   -1.0,
-        +1.0,   +1.0,   -1.0,
-        // Bottom
-        +1.0,   -1.0,   +1.0,
-        -1.0,   -1.0,   +1.0,
-        -1.0,   -1.0,   -1.0,
-        +1.0,   -1.0,   -1.0,
+    vector<vector<GLfloat>> points = {
+//        Changed to the following form:
+//        [ x1, x2, x3, ...
+//          y1, y2, y3, ...
+//          z1, z2, z3, ... ]
+        {+1.0, -1.0, -1.0, +1.0, +1.0, -1.0, -1.0, +1.0, +1.0, +1.0, +1.0, +1.0, -1.0, -1.0, -1.0, -1.0, +1.0, -1.0, -1.0, +1.0, +1.0, -1.0, -1.0, +1.0},
+        {+1.0, +1.0, -1.0, -1.0, +1.0, +1.0, -1.0, -1.0, +1.0, +1.0, -1.0, -1.0, +1.0, +1.0, -1.0, -1.0, +1.0, +1.0, +1.0, +1.0, -1.0, -1.0, -1.0, -1.0},
+        {+1.0, +1.0, +1.0, +1.0, -1.0, -1.0, -1.0, -1.0, -1.0, +1.0, +1.0, -1.0, -1.0, +1.0, +1.0, -1.0, +1.0, +1.0, -1.0, -1.0, +1.0, +1.0, -1.0, -1.0},
     };
-    
+
     GLfloat colors[] = {
         // Front plane
         1.0,    0.0,    0.0,
@@ -245,10 +229,15 @@ void display_func() {
         0.0,    1.0,    1.0,
     };
     
-    // TODO: Apply rotation(s) to the set of points
+    vector<vector<GLfloat>> rotated_points = to_homogenous_coord(points);
     
+    rotated_points = mat_mult(rotation_matrix_x(theta), rotated_points);
+    rotated_points = mat_mult(rotation_matrix_y(theta), rotated_points);
+    rotated_points = mat_mult(rotation_matrix_z(theta), rotated_points);
     
-    GLfloat* vertices = vector2array(points);
+    rotated_points = to_cartesian_coord(rotated_points);
+    
+    GLfloat* vertices = two_d_vector_to_array(rotated_points);
     
     glVertexPointer(3,          // 3 components (x, y, z)
                     GL_FLOAT,   // Vertex type is GL_FLOAT
@@ -269,7 +258,7 @@ void display_func() {
 }
 
 void idle_func() {
-    theta = theta+0.3;
+    theta = theta+0.075;
     display_func();
 }
 
@@ -291,4 +280,3 @@ int main (int argc, char **argv) {
     glutMainLoop();
     return 0;
 }
-
