@@ -212,25 +212,25 @@ vector<vector<GLfloat>> rotation_matrix_z (float theta) {
 
 // Perform matrix multiplication between matrix A and matrix B
 vector<vector<GLfloat>> mat_mult(vector<vector<GLfloat>> A, vector<vector<GLfloat>> B) {
-//    INPUT MATRIX "A"
-//    cout << "Matrix A:" << '\n';
-//    for (vector<GLfloat> v : A) {
-//        for (GLfloat f : v) {
-//            cout << f << ", ";
-//        }
-//        cout << '\n';
-//    }
-//    cout << '\n';
-
-//    INPUT MATRIX "B"
-//    cout << "Matrix B:" << '\n';
-//    for (vector<GLfloat> v : B) {
-//        for (GLfloat f : v) {
-//            cout << f << ", ";
-//        }
-//        cout << '\n';
-//    }
-//    cout << '\n';
+    //    INPUT MATRIX "A"
+    //    cout << "Matrix A:" << '\n';
+    //    for (vector<GLfloat> v : A) {
+    //        for (GLfloat f : v) {
+    //            cout << f << ", ";
+    //        }
+    //        cout << '\n';
+    //    }
+    //    cout << '\n';
+    
+    //    INPUT MATRIX "B"
+    //    cout << "Matrix B:" << '\n';
+    //    for (vector<GLfloat> v : B) {
+    //        for (GLfloat f : v) {
+    //            cout << f << ", ";
+    //        }
+    //        cout << '\n';
+    //    }
+    //    cout << '\n';
     
     vector<vector<GLfloat>> result(A.size(), vector<GLfloat>(B[0].size(), 0.0));
     
@@ -246,15 +246,15 @@ vector<vector<GLfloat>> mat_mult(vector<vector<GLfloat>> A, vector<vector<GLfloa
         }
     }
     
-//    RESULT OF MATRIX MULTIPLICATION
-//    cout << "Result:" << '\n';
-//    for (vector<GLfloat> v : result) {
-//        for (GLfloat f : v) {
-//            cout << f << ", ";
-//        }
-//        cout << '\n';
-//    }
-//    cout << '\n';
+    //    RESULT OF MATRIX MULTIPLICATION
+    //    cout << "Result:" << '\n';
+    //    for (vector<GLfloat> v : result) {
+    //        for (GLfloat f : v) {
+    //            cout << f << ", ";
+    //        }
+    //        cout << '\n';
+    //    }
+    //    cout << '\n';
     
     return result;
 }
@@ -276,48 +276,48 @@ vector<vector<GLfloat>> build_cube() {
     left_plane = to_cartesian_coord(left_plane);
     left_plane = pivot_coordinates(left_plane);
     result.insert(result.end(), left_plane.begin(), left_plane.end());
-
+    
     vector<vector<GLfloat>> right_plane = mat_mult(rotation_matrix_y(+90.0), initial_plane);
     right_plane = mat_mult(translation_matrix(+0.5, +0.0, +0.0), right_plane);
     right_plane = to_cartesian_coord(right_plane);
     right_plane = pivot_coordinates(right_plane);
     result.insert(result.end(), right_plane.begin(), right_plane.end());
-
+    
     vector<vector<GLfloat>> back_plane = mat_mult(rotation_matrix_y(+180.0), initial_plane);
     back_plane = mat_mult(translation_matrix(+0.0, +0.0, -0.5), back_plane);
     back_plane = to_cartesian_coord(back_plane);
     back_plane = pivot_coordinates(back_plane);
     result.insert(result.end(), back_plane.begin(), back_plane.end());
-
+    
     vector<vector<GLfloat>> top_plane = mat_mult(rotation_matrix_x(-90.0), initial_plane);
     top_plane = mat_mult(translation_matrix(+0.0, +0.5, +0.0), top_plane);
     top_plane = to_cartesian_coord(top_plane);
     top_plane = pivot_coordinates(top_plane);
     result.insert(result.end(), top_plane.begin(), top_plane.end());
-
+    
     vector<vector<GLfloat>> bottom_plane = mat_mult(rotation_matrix_x(+90.0), initial_plane);
     bottom_plane = mat_mult(translation_matrix(+0.0, -0.5, +0.0), bottom_plane);
     bottom_plane = to_cartesian_coord(bottom_plane);
     bottom_plane = pivot_coordinates(bottom_plane);
     result.insert(result.end(), bottom_plane.begin(), bottom_plane.end());
     
-//    DISPLAY THE 6 PLANES OF OUR UNIT CUBE
-//    int count = 0;
-//    cout << "Result" << '\n';
-//    for (vector<GLfloat>& v : result) {
-//        for (GLfloat& f : v) {
-//            cout << f << ", ";
-//        }
-//        cout << '\n';
-//        if (count == 3) {
-//            cout << '\n';
-//            count = 0;
-//        } else {
-//            count++;
-//        }
-//    }
-//    cout << '\n';
-
+    //    DISPLAY THE 6 PLANES OF OUR UNIT CUBE
+    //    int count = 0;
+    //    cout << "Result" << '\n';
+    //    for (vector<GLfloat>& v : result) {
+    //        for (GLfloat& f : v) {
+    //            cout << f << ", ";
+    //        }
+    //        cout << '\n';
+    //        if (count == 3) {
+    //            cout << '\n';
+    //            count = 0;
+    //        } else {
+    //            count++;
+    //        }
+    //    }
+    //    cout << '\n';
+    
     return result;
 }
 
@@ -493,7 +493,7 @@ vector<vector<GLfloat>> init_color(vector<vector<GLfloat>> scene) {
     
     for (int i = 0; i < scene.size(); i++) {
         for (int j = 0; j < scene[0].size(); j++) {
-          colors[i][j] = (static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
+            colors[i][j] = (static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
         }
     }
     
